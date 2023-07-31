@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/CESARBR/knot-thing-sql/internal/entities"
+	"github.com/CESARBR/knot-mqtt/internal/entities"
 	"github.com/stretchr/testify/assert"
 )
 
