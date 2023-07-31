@@ -1,2 +1,2 @@
 url: amqp://knot:knot@127.0.0.1:5672
-user_token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjE0OTk1NTksImp0aSI6IjAxNmVjZjBiLTgwZTUtNGQzZC1iZmJlLTM2NjNjNWU3NjMyYiIsImlhdCI6MTY4OTk2MzU1OSwiaXNzIjoidGFzM0BjZXNhci5vcmcuYnIiLCJ0eXBlIjoyfQ.CG94sx06C1iwTqBvd4bv9VZ86ykjjDPo9PV59J27y4I
+user_token :
