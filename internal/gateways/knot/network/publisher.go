@@ -1,7 +1,7 @@
 package network
 
 import (
-	"github.com/CESARBR/knot-thing-sql/internal/entities"
+	"github.com/CESARBR/knot-mqtt/internal/entities"
 )
 
 const (

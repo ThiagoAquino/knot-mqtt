@@ -3,11 +3,11 @@ package network
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/streadway/amqp"
 	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/streadway/amqp"
 )
 
 const (

@@ -1,0 +1,14 @@
+intervalBetweenRequestInSeconds: 5
+datesPersistenceFilepath: internal/configuration/latest_record_timestamp.yaml
+#Maximum period to retrieve historical data after an application restart.
+dataRecoveryPeriodInHours: 0
+#Format: integer ID: tagName
+pertinentTags:
+  1: 978-0-00-203471-5
+  2: 978-0-00-276490-2
+  3: 978-0-00-311203-0
+  4: 978-0-01-247461-7
+  5: 978-0-01-298889-3
+logFilepath: configuration/knot_sql.log
+numberParallelTags: 5
+context: oracle

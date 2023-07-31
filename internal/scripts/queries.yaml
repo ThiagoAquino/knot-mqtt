@@ -1,0 +1,9 @@
+# The order of columns must be: value and timestamp.
+# The application expects the records to be sorted from oldest to newest.
+# Make sure the query sorts the records by timestamp in ascending order.
+mapping:
+1: "SELECT value, timestamp FROM measurements WHERE tag='978-0-00-203471-5' AND timestamp > '%s' ORDER BY timestamp ASC"
+2: "SELECT value, timestamp FROM measurements WHERE tag='978-0-00-276490-2' AND timestamp > '%s' ORDER BY timestamp ASC"
+3: "SELECT value, timestamp FROM measurements WHERE tag='978-0-00-311203-0' AND timestamp > '%s' ORDER BY timestamp ASC"
+4: "SELECT value, timestamp FROM measurements WHERE tag='978-0-01-247461-7' AND timestamp > '%s' ORDER BY timestamp ASC"
+5: "SELECT value, timestamp FROM measurements WHERE tag='978-0-01-298889-3' AND timestamp > '%s' ORDER BY timestamp ASC"

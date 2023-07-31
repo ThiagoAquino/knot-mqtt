@@ -1,12 +1,17 @@
 package entities
 
-type CapturedData struct {
-	ID   string `json:"id"`
-	Data []Data `json:"data"`
-}
-
-type Data struct {
-	SensorID  int     `json:"sensorId"`
+type Row struct {
+	ID        int     `json:"sensorId"`
 	Value     float64 `json:"value"`
 	Timestamp string  `json:"timestamp"`
+}
+
+type Statement struct {
+	Table     string `json:"table"`
+	Timestamp string `json:"timestamp"`
+}
+
+type CapturedData struct {
+	ID   int   `json:"id"`
+	Rows []Row `json:"data"`
 }

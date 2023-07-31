@@ -57,13 +57,10 @@ func sentDataToKNoT(row entities.Row, capturedData entities.CapturedData, device
 		Structure the data collected from the database in the format expected by KNoT,
 		and finally transmits the data to the KNoT Cloud
 	*/
-	convertedValue, err := convertStringValueToNumeric(row.Value)
-	if err == nil && device.ID != "" {
-		data := entities.Data{}
-		data = entities.Data{SensorID: capturedData.ID, Value: convertedValue, TimeStamp: formatTimestampToUTC(row.Timestamp)}
-		device.Data = append(device.Data, data)
-		knotIntegration.Transmit(device)
-	}
+	data := entities.Data{}
+	data = entities.Data{SensorID: capturedData.ID, Value: row.Value, TimeStamp: row.Timestamp}
+	device.Data = append(device.Data, data)
+	knotIntegration.Transmit(device)
 }
 
 func convertStringValueToNumeric(value string) (interface{}, error) {

@@ -4,15 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/CESARBR/knot-thing-sql/internal/entities"
-	"github.com/CESARBR/knot-thing-sql/internal/gateways/knot/network"
+	"github.com/CESARBR/knot-mqtt/internal/entities"
+	"github.com/CESARBR/knot-mqtt/internal/gateways/knot/network"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 // Protocol interface provides methods to handle KNoT Protocol
@@ -404,7 +404,7 @@ func (p *protocol) deleteDevice(id string) error {
 	return nil
 }
 
-//non-blocking channel to update devices on the other routin
+// non-blocking channel to update devices on the other routin
 func updateDeviceMap(pipeDevices chan map[string]entities.Device, devices map[string]entities.Device) {
 	pipeDevices <- devices
 }

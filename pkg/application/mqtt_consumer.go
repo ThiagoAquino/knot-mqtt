@@ -3,12 +3,11 @@ package application
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/CESARBR/knot-mqtt/internal/entities"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"knot-mqtt/internal/entities"
 	"log"
 	"os"
 	"os/signal"
-	"time"
 )
 
 const (
@@ -32,15 +31,17 @@ func ConfigureClient() mqtt.Client {
 	return client
 }
 
-func SubscribeTopic(client mqtt.Client, qos byte) {
-	if token := client.Subscribe(topic, qos, onMessageReceived); token.Wait() && token.Error() != nil {
+func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData) {
+	if token := client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
+		onMessageReceived(msg, transmissionChannel)
+	}); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
 	log.Printf("Subscrição realizada no tópico: %s", topic)
 }
 
-func onMessageReceived(client mqtt.Client, msg mqtt.Message) {
+func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData) {
 	var capturedData entities.CapturedData
 
 	err := json.Unmarshal([]byte(msg.Payload()), &capturedData)
@@ -50,20 +51,24 @@ func onMessageReceived(client mqtt.Client, msg mqtt.Message) {
 	}
 
 	// Imprimindo os dados decodificados
-	fmt.Println("ID:", capturedData.ID)
-	for _, data := range capturedData.Data {
-		data.Timestamp = time.Now().Format(datetimeLayout)
-		fmt.Println("SensorID:", data.SensorID)
-		fmt.Println("Value:", data.Value)
-		fmt.Println("Timestamp:", data.Timestamp)
+	fmt.Println("SensorId:", capturedData.ID)
+	for _, row := range capturedData.Rows {
+		fmt.Println("Value:", row.Value)
+		fmt.Println("Timestamp:", row.Timestamp)
 	}
-
+	transmissionChannel <- capturedData
 }
 
-func EndListen() {
+func WaitUntilShutdown() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
 	log.Println("Sinal de interrupção recebido. Desconectando...")
 	fmt.Println("Desconectando...")
+}
+
+func VerifyError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

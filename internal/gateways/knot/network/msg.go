@@ -1,8 +1,6 @@
 package network
 
-import (
-	"github.com/CESARBR/knot-mqtt/internal/entities"
-)
+import "github.com/CESARBR/knot-mqtt/internal/entities"
 
 type DeviceGenericMessage struct {
 	ID     string            `json:"id"`
