@@ -9,7 +9,7 @@ import (
 )
 
 type config interface {
-	entities.Database | entities.Application | entities.Query | map[string]entities.Device | entities.IntegrationKNoTConfig | map[int]string
+	entities.Database | entities.Application | entities.Query | map[string]entities.Device | entities.IntegrationKNoTConfig | entities.MqttConfig | map[int]string
 }
 
 func readTextFile(filepathName string) ([]byte, error) {

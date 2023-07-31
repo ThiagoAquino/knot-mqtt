@@ -29,3 +29,9 @@ type IntegrationKNoTConfig struct {
 	URL                     string `yaml:"url"`
 	EventRoutingKeyTemplate string `yaml:"event_routing_key_template"`
 }
+
+type MqttConfig struct {
+	MqttBroker   string `yaml:"mqttBroker"`
+	MqttClientID string `yaml:"mqttClientID"`
+	Topic        string `yaml:"topic"`
+}

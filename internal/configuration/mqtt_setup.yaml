@@ -1,0 +1,3 @@
+mqttBroker: "tcp://localhost:1883"
+mqttClientID: "mqtt-subscriber"
+topic: "knot"

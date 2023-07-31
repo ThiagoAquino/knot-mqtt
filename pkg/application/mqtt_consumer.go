@@ -10,17 +10,10 @@ import (
 	"os/signal"
 )
 
-const (
-	mqttBroker     = "tcp://localhost:1883"
-	mqttClientID   = "mqtt-subscriber"
-	topic          = "knot"
-	datetimeLayout = "2006-01-02 15:04:05"
-)
-
-func ConfigureClient() mqtt.Client {
+func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	//Configure client
-	opts := mqtt.NewClientOptions().AddBroker(mqttBroker)
-	opts.SetClientID(mqttClientID)
+	opts := mqtt.NewClientOptions().AddBroker(mqttConfiguration.MqttBroker)
+	opts.SetClientID(mqttConfiguration.MqttClientID)
 
 	// Create MQTT client
 	client := mqtt.NewClient(opts)
@@ -31,14 +24,14 @@ func ConfigureClient() mqtt.Client {
 	return client
 }
 
-func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData) {
-	if token := client.Subscribe(topic, qos, func(client mqtt.Client, msg mqtt.Message) {
+func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig) {
+	if token := client.Subscribe(mqttConfiguration.Topic, qos, func(client mqtt.Client, msg mqtt.Message) {
 		onMessageReceived(msg, transmissionChannel)
 	}); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
-	log.Printf("Subscrição realizada no tópico: %s", topic)
+	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)
 }
 
 func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData) {
