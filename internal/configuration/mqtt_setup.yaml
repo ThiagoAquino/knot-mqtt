@@ -1,3 +1,6 @@
 mqttBroker: "tcp://localhost:1883"
 mqttClientID: "mqtt-subscriber"
 topic: "knot"
+logFilepath: configuration/knot_mqtt.log
+amountTags: 5
+

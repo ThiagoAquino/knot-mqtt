@@ -10,16 +10,6 @@ type Database struct {
 	Database         string `yaml:"database"`
 }
 
-type Application struct {
-	IntervalBetweenRequestInSeconds int            `yaml:"intervalBetweenRequestInSeconds"`
-	PertinentTags                   map[int]string `yaml:"pertinentTags"`
-	LogFilepath                     string         `yaml:"logFilepath"`
-	DatesPersistenceFilepath        string         `yaml:"datesPersistenceFilepath"`
-	NumberParallelTags              int            `yaml:"numberParallelTags"`
-	DataRecoveryPeriodInHours       int            `yaml:"dataRecoveryPeriodInHours"`
-	Context                         string         `yaml:"context"`
-}
-
 type Query struct {
 	Mapping map[int]string `yaml:"mapping"`
 }
@@ -34,4 +24,6 @@ type MqttConfig struct {
 	MqttBroker   string `yaml:"mqttBroker"`
 	MqttClientID string `yaml:"mqttClientID"`
 	Topic        string `yaml:"topic"`
+	LogFilepath  string `yaml:"logFilepath"`
+	AmountTags   int    `yaml:"amountTags"`
 }

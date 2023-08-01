@@ -16,12 +16,12 @@ import (
 
 func main() {
 	startPprof()
-	applicationConfiguration, deviceConfiguration, knotConfiguration, mqttConfiguration := loadConfiguration()
+	deviceConfiguration, knotConfiguration, mqttConfiguration := loadConfiguration()
 
-	log := setupLogger(applicationConfiguration.LogFilepath)
+	log := setupLogger(mqttConfiguration.LogFilepath)
 	logger := log.Get("Main")
 
-	transmissionChannel := make(chan entities.CapturedData, len(applicationConfiguration.PertinentTags))
+	transmissionChannel := make(chan entities.CapturedData, mqttConfiguration.AmountTags)
 
 	//Create and Configure client
 	client := application.ConfigureClient(mqttConfiguration)
@@ -41,16 +41,16 @@ func main() {
 	application.WaitUntilShutdown()
 }
 
-func loadConfiguration() (entities.Application, map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig) {
-	applicationConfiguration, err := utils.ConfigurationParser("internal/configuration/application_configuration.yaml", entities.Application{})
-	application.VerifyError(err)
+func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig) {
+	//applicationConfiguration, err := utils.ConfigurationParser("internal/configuration/application_configuration.yaml", entities.Application{})
+	//application.VerifyError(err)
 	deviceConfiguration, err := utils.ConfigurationParser("internal/configuration/device_config.yaml", make(map[string]entities.Device))
 	application.VerifyError(err)
 	knotConfiguration, err := utils.ConfigurationParser("internal/configuration/knot_setup.yaml", entities.IntegrationKNoTConfig{})
 	application.VerifyError(err)
 	mqttConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_setup.yaml", entities.MqttConfig{})
 	application.VerifyError(err)
-	return applicationConfiguration, deviceConfiguration, knotConfiguration, mqttConfiguration
+	return deviceConfiguration, knotConfiguration, mqttConfiguration
 }
 
 func startPprof() {
