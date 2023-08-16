@@ -1,9 +1,9 @@
 package entities
 
 type Row struct {
-	ID        int     `json:"sensorId"`
-	Value     float64 `json:"value"`
-	Timestamp string  `json:"timestamp"`
+	ID        int         `json:"sensorId"`
+	Value     interface{} `json:"value"`
+	Timestamp string      `json:"timestamp"`
 }
 
 type Statement struct {

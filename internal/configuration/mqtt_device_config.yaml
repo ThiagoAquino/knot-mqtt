@@ -1,0 +1,7 @@
+config:
+
+  - SensorType: sensorType2
+    Topic: /device/sensor/1
+    Value: objeto_valor2
+    Name: objeto_nome2
+    Timestamp: objeto_timestamp2

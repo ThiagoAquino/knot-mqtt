@@ -16,7 +16,7 @@ import (
 
 func main() {
 	startPprof()
-	deviceConfiguration, knotConfiguration, mqttConfiguration := loadConfiguration()
+	deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration := loadConfiguration()
 
 	log := setupLogger(mqttConfiguration.LogFilepath)
 	logger := log.Get("Main")
@@ -28,8 +28,10 @@ func main() {
 	defer client.Disconnect(250)
 
 	// Inscreve-se no tópico "/topico/subtopico" com o QoS configurado
-	application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration)
+	application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, mqttDeviceConfiguration)
 	fmt.Println()
+
+	fmt.Println(mqttDeviceConfiguration)
 
 	pipeDevices := make(chan map[string]entities.Device)
 	knotIntegration, err := knot.NewKNoTIntegration(pipeDevices, knotConfiguration, logger, deviceConfiguration)
@@ -38,14 +40,17 @@ func main() {
 	application.WaitUntilShutdown()
 }
 
-func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig) {
+func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig, entities.DeviceConfig) {
 	deviceConfiguration, err := utils.ConfigurationParser("internal/configuration/device_config.yaml", make(map[string]entities.Device))
 	application.VerifyError(err)
 	knotConfiguration, err := utils.ConfigurationParser("internal/configuration/knot_setup.yaml", entities.IntegrationKNoTConfig{})
 	application.VerifyError(err)
 	mqttConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_setup.yaml", entities.MqttConfig{})
 	application.VerifyError(err)
-	return deviceConfiguration, knotConfiguration, mqttConfiguration
+	mqttDeviceConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_device_config.yaml", entities.DeviceConfig{})
+	application.VerifyError(err)
+
+	return deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration
 }
 
 func startPprof() {
