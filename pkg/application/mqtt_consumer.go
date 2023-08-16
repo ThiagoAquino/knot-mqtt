@@ -34,24 +34,6 @@ func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entit
 	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)
 }
 
-func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData) {
-	var capturedData entities.CapturedData
-
-	err := json.Unmarshal([]byte(msg.Payload()), &capturedData)
-	if err != nil {
-		fmt.Println("Erro ao converter JSON:", err)
-		return
-	}
-
-	// Imprimindo os dados decodificados
-	fmt.Println("SensorId:", capturedData.ID)
-	for _, row := range capturedData.Rows {
-		fmt.Println("Value:", row.Value)
-		fmt.Println("Timestamp:", row.Timestamp)
-	}
-	transmissionChannel <- capturedData
-}
-
 func WaitUntilShutdown() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
@@ -64,4 +46,49 @@ func VerifyError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+/** Com Payload genérico, descartando os campos que não são utilizados. Usando map[string] interface.*/
+
+func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData) {
+	var capturedData struct {
+		ID   int                      `json:"id"`
+		Data []map[string]interface{} `json:"data"`
+	}
+
+	err := json.Unmarshal([]byte(msg.Payload()), &capturedData)
+	if err != nil {
+		fmt.Println("Erro ao converter JSON:", err)
+		return
+	}
+
+	// Construir a estrutura final removendo os campos indesejados
+	var finalData entities.CapturedData
+	dataId := capturedData.ID
+	for _, dataMap := range capturedData.Data {
+		var dataRow entities.Row
+
+		sensorId, _ := dataMap["sensorId"].(float64)
+		finalData.ID = int(sensorId)
+
+		value, _ := dataMap["value"].(float64)
+		dataRow.Value = value
+
+		timestamp, _ := dataMap["timestamp"].(string)
+		dataRow.Timestamp = timestamp
+
+		// Outros campos podem ser tratados da mesma maneira
+
+		finalData.Rows = append(finalData.Rows, dataRow)
+	}
+
+	// Imprimir os dados decodificados
+	fmt.Println("CapturedData:", dataId)
+	for _, row := range finalData.Rows {
+		fmt.Println("SensorId:", finalData.ID)
+		fmt.Println("Value:", row.Value)
+		fmt.Println("Timestamp:", row.Timestamp)
+	}
+
+	transmissionChannel <- finalData
 }

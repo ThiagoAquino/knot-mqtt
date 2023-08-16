@@ -27,11 +27,8 @@ func main() {
 	client := application.ConfigureClient(mqttConfiguration)
 	defer client.Disconnect(250)
 
-	// Configura o QoS para 2 (entrega exatamente uma vez)
-	qos := byte(2)
-
 	// Inscreve-se no tópico "/topico/subtopico" com o QoS configurado
-	application.SubscribeTopic(client, qos, transmissionChannel, mqttConfiguration)
+	application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration)
 	fmt.Println()
 
 	pipeDevices := make(chan map[string]entities.Device)
@@ -42,8 +39,6 @@ func main() {
 }
 
 func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig) {
-	//applicationConfiguration, err := utils.ConfigurationParser("internal/configuration/application_configuration.yaml", entities.Application{})
-	//application.VerifyError(err)
 	deviceConfiguration, err := utils.ConfigurationParser("internal/configuration/device_config.yaml", make(map[string]entities.Device))
 	application.VerifyError(err)
 	knotConfiguration, err := utils.ConfigurationParser("internal/configuration/knot_setup.yaml", entities.IntegrationKNoTConfig{})

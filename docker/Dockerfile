@@ -11,6 +11,15 @@ RUN apk --no-cache add --virtual .build-deps \
     git \
     curl
 
+# Instale o OpenSSL para gerar o certificado
+RUN apk add --no-cache openssl
+
+# Set the Current Working Directory inside the container
+WORKDIR /go/src/github.com/CESARBR/knot-mqtt
+
+# Copy the source code from the current directory to $WORKDIR (inside the container)
+COPY . .
+
 #Install package required by golang "time" on scratch-based images
 RUN apk --no-cache add tzdata
 
