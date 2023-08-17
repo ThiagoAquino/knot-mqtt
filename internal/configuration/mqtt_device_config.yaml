@@ -1,7 +1,13 @@
 config:
-
-  - SensorType: sensorType2
-    Topic: /device/sensor/1
-    Value: objeto_valor2
-    Name: objeto_nome2
-    Timestamp: objeto_timestamp2
+    - sensor:
+          ID: sensorId
+          Topic: topic_test
+          Value: objeto_valor
+          Name: objeto_nome
+          Timestamp: objeto_timestamp
+    - sensor:
+          ID:  sensorId
+          Topic: knot
+          Value: objeto_valor
+          Name: objeto_nome
+          Timestamp: objeto_timestampgit a

@@ -1,15 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"github.com/CESARBR/knot-mqtt/internal/entities"
 	"github.com/CESARBR/knot-mqtt/internal/gateways/knot"
 	"github.com/CESARBR/knot-mqtt/internal/utils"
 	"github.com/CESARBR/knot-mqtt/pkg/application"
 	"github.com/CESARBR/knot-mqtt/pkg/logging"
-	_ "github.com/sirupsen/logrus"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 )
@@ -17,21 +14,17 @@ import (
 func main() {
 	startPprof()
 	deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration := loadConfiguration()
-
 	log := setupLogger(mqttConfiguration.LogFilepath)
 	logger := log.Get("Main")
-
 	transmissionChannel := make(chan entities.CapturedData, mqttConfiguration.AmountTags)
 
-	//Create and Configure client
 	client := application.ConfigureClient(mqttConfiguration)
 	defer client.Disconnect(250)
 
-	// Inscreve-se no tópico "/topico/subtopico" com o QoS configurado
-	application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, mqttDeviceConfiguration)
-	fmt.Println()
-
-	fmt.Println(mqttDeviceConfiguration)
+	for _, config := range mqttDeviceConfiguration.Config {
+		mqttConfiguration.Topic = config.Sensor.Topic
+		application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config)
+	}
 
 	pipeDevices := make(chan map[string]entities.Device)
 	knotIntegration, err := knot.NewKNoTIntegration(pipeDevices, knotConfiguration, logger, deviceConfiguration)
@@ -49,7 +42,6 @@ func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTCo
 	application.VerifyError(err)
 	mqttDeviceConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_device_config.yaml", entities.DeviceConfig{})
 	application.VerifyError(err)
-
 	return deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration
 }
 

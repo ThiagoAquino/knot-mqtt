@@ -60,10 +60,15 @@ type Data struct {
 type DeviceConfig struct {
 	Config []ConfigSensor `yaml:"config"`
 }
+
 type ConfigSensor struct {
-	SensorType string `yaml:"SensorType"`
-	Topic      string `yaml:"Topic"`
-	Value      string `yaml:"Value"`
-	Name       string `yaml:"Name"`
-	Timestamp  string `yaml:"Timestamp"`
+	Sensor SensorDetail `yaml:"sensor"`
+}
+
+type SensorDetail struct {
+	ID        string `yaml:"ID"`
+	Topic     string `yaml:"Topic"`
+	Value     string `yaml:"Value"`
+	Name      string `yaml:"Name"`
+	Timestamp string `yaml:"Timestamp"`
 }
