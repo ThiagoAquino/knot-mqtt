@@ -30,7 +30,7 @@ func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entit
 	if token := client.Subscribe(mqttConfiguration.Topic, qos, func(client mqtt.Client, msg mqtt.Message) {
 		onMessageReceived(msg, transmissionChannel, deviceConfiguration, mqttConfigSensor)
 	}); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
+		log.Println(token.Error())
 		os.Exit(1)
 	}
 	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)

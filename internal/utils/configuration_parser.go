@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/CESARBR/knot-mqtt/internal/entities"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -12,7 +12,7 @@ type config interface {
 }
 
 func readTextFile(filepathName string) ([]byte, error) {
-	fileContent, err := ioutil.ReadFile(filepath.Clean(filepathName))
+	fileContent, err := os.ReadFile(filepath.Clean(filepathName))
 	return fileContent, err
 }
 func ConfigurationParser[T config](filepathName string, configEntity T) (T, error) {
