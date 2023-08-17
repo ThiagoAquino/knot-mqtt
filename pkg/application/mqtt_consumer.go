@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"os/signal"
+	"reflect"
 )
 
 func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
@@ -51,7 +52,9 @@ func VerifyError(err error) {
 
 func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.ConfigSensor) {
 	var data map[string]interface{}
+
 	err := json.Unmarshal([]byte(msg.Payload()), &data)
+
 	if err != nil {
 		log.Println("Erro ao converter JSON:", err)
 		return
@@ -65,6 +68,8 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		sensorId, _ := capturedDataMap[mqttConfigSensor.Sensor.ID].(float64)
 		value, _ := capturedDataMap[mqttConfigSensor.Sensor.Value]
 		times, _ := capturedDataMap[mqttConfigSensor.Sensor.Timestamp].(string)
+
+		validateDevice(deviceConfiguration, sensorId, value)
 
 		finalData.ID = int(math.Round(sensorId))
 
@@ -81,4 +86,27 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		}
 	}
 	transmissionChannel <- finalData
+}
+
+func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) {
+	hexMap := map[int]string{
+		1: "int",
+		2: "float64",
+		3: "bool",
+		4: "string",
+		5: "int64",
+		6: "uint",
+		7: "double",
+	}
+
+	//Encontrar o tipo de dispositivo com base no sensorId
+	for _, device := range deviceConfiguration {
+		for _, config := range device.Config {
+			typeOf := reflect.TypeOf(value).Name()
+			if config.SensorID == int(sensorId) && hexMap[config.Schema.ValueType] != typeOf {
+				log.Printf("O dado do sensor %d está diferente do configurado no device_config", sensorId)
+				continue
+			}
+		}
+	}
 }
