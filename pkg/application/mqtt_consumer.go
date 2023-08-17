@@ -67,28 +67,33 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		capturedDataMap, _ := capturedData.(map[string]interface{})
 		sensorId, _ := capturedDataMap[mqttConfigSensor.Sensor.ID].(float64)
 		value, _ := capturedDataMap[mqttConfigSensor.Sensor.Value]
-		times, _ := capturedDataMap[mqttConfigSensor.Sensor.Timestamp].(string)
+		timestamp, _ := capturedDataMap[mqttConfigSensor.Sensor.Timestamp].(string)
 
 		validateDevice(deviceConfiguration, sensorId, value)
 
-		finalData.ID = int(math.Round(sensorId))
+		if validateDevice(deviceConfiguration, sensorId, value) {
+			finalData.ID = int(math.Round(sensorId))
 
-		var dataRow entities.Row
-		dataRow.Value = value
-		dataRow.Timestamp = times
-		finalData.Rows = append(finalData.Rows, dataRow)
+			var dataRow entities.Row
+			dataRow.Value = value
+			dataRow.Timestamp = timestamp
+			finalData.Rows = append(finalData.Rows, dataRow)
 
-		fmt.Println("SensorId:", finalData.ID)
-		// Imprimir os dados decodificados
-		for _, row := range finalData.Rows {
-			fmt.Println("Value:", row.Value)
-			fmt.Println("Timestamp:", row.Timestamp)
+			fmt.Println("SensorId:", finalData.ID)
+			// Imprimir os dados decodificados
+			for _, row := range finalData.Rows {
+				fmt.Println("Value:", row.Value)
+				fmt.Println("Timestamp:", row.Timestamp)
+			}
+			transmissionChannel <- finalData
+		} else {
+			log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", sensorId)
 		}
 	}
-	transmissionChannel <- finalData
+
 }
 
-func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) {
+func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) bool {
 	hexMap := map[int]string{
 		1: "int",
 		2: "float64",
@@ -99,14 +104,14 @@ func validateDevice(deviceConfiguration map[string]entities.Device, sensorId flo
 		7: "double",
 	}
 
-	//Encontrar o tipo de dispositivo com base no sensorId
+	isValid := false
 	for _, device := range deviceConfiguration {
 		for _, config := range device.Config {
 			typeOf := reflect.TypeOf(value).Name()
-			if config.SensorID == int(sensorId) && hexMap[config.Schema.ValueType] != typeOf {
-				log.Printf("O dado do sensor %d está diferente do configurado no device_config", sensorId)
-				continue
+			if config.SensorID == int(sensorId) && hexMap[config.Schema.ValueType] == typeOf {
+				isValid = true
 			}
 		}
 	}
+	return isValid
 }
