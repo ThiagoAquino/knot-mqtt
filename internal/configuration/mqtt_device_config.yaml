@@ -1,11 +1,11 @@
 config:
-    - 1:
-          ID: sensorId
-          Topic: topic_test
-          Value: objeto_valor
-          Timestamp: objeto_timestamp
-    - 2:
-          ID:  sensorId
-          Topic: knot
-          Value: objeto_valor
-          Timestamp: objeto_timestamp
+  - 1:
+    ID: sensorId
+    Topic: topic_test
+    Value: objeto_valor
+    Timestamp: objeto_timestamp
+  - 2:
+    ID:  sensorId
+    Topic: knot
+    Value: objeto_valor
+    Timestamp: objeto_timestamp
