@@ -21,8 +21,8 @@ func main() {
 	client := application.ConfigureClient(mqttConfiguration)
 	defer client.Disconnect(250)
 
-	for _, config := range mqttDeviceConfiguration.Config {
-		mqttConfiguration.Topic = config.Sensor.Topic
+	for _, config := range mqttDeviceConfiguration.SensorDetails {
+		mqttConfiguration.Topic = config.Topic
 		application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config)
 	}
 

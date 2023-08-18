@@ -26,7 +26,7 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	return client
 }
 
-func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.ConfigSensor) {
+func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
 	if token := client.Subscribe(mqttConfiguration.Topic, qos, func(client mqtt.Client, msg mqtt.Message) {
 		onMessageReceived(msg, transmissionChannel, deviceConfiguration, mqttConfigSensor)
 	}); token.Wait() && token.Error() != nil {
@@ -50,7 +50,7 @@ func VerifyError(err error) {
 	}
 }
 
-func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.ConfigSensor) {
+func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
 	var data map[string]interface{}
 
 	err := json.Unmarshal([]byte(msg.Payload()), &data)
@@ -65,9 +65,9 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 	capturedDataArray, _ := data["data"].([]interface{})
 	for _, capturedData := range capturedDataArray {
 		capturedDataMap, _ := capturedData.(map[string]interface{})
-		sensorId, _ := capturedDataMap[mqttConfigSensor.Sensor.ID].(float64)
-		value, _ := capturedDataMap[mqttConfigSensor.Sensor.Value]
-		timestamp, _ := capturedDataMap[mqttConfigSensor.Sensor.Timestamp].(string)
+		sensorId, _ := capturedDataMap[mqttConfigSensor.ID].(float64)
+		value, _ := capturedDataMap[mqttConfigSensor.Value]
+		timestamp, _ := capturedDataMap[mqttConfigSensor.Timestamp].(string)
 
 		validateDevice(deviceConfiguration, sensorId, value)
 
@@ -90,7 +90,6 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 			log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", sensorId)
 		}
 	}
-
 }
 
 func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) bool {
