@@ -23,7 +23,7 @@ func main() {
 
 	for _, config := range mqttDeviceConfiguration.SensorDetails {
 		mqttConfiguration.Topic = config.Topic
-		application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config)
+		go application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config)
 	}
 
 	pipeDevices := make(chan map[string]entities.Device)

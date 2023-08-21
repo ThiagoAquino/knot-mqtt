@@ -10,6 +10,8 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
@@ -62,34 +64,68 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 
 	var finalData entities.CapturedData
 
-	capturedDataArray, _ := data["data"].([]interface{})
-	for _, capturedData := range capturedDataArray {
-		capturedDataMap, _ := capturedData.(map[string]interface{})
-		sensorId, _ := capturedDataMap[mqttConfigSensor.ID].(float64)
-		value, _ := capturedDataMap[mqttConfigSensor.Value]
-		timestamp, _ := capturedDataMap[mqttConfigSensor.Timestamp].(string)
+	sensorId := getField(mqttConfigSensor.ID, data)
+	value := getField(mqttConfigSensor.Value, data)
+	timestamp := getField(mqttConfigSensor.Timestamp, data)
 
-		validateDevice(deviceConfiguration, sensorId, value)
+	if sensorId == nil || value == nil || timestamp == nil {
+		return
+	}
 
-		if validateDevice(deviceConfiguration, sensorId, value) {
-			finalData.ID = int(math.Round(sensorId))
+	sensorIdParse := sensorId.(float64)
+	timestampParse := timestamp.(string)
 
-			var dataRow entities.Row
-			dataRow.Value = value
-			dataRow.Timestamp = timestamp
-			finalData.Rows = append(finalData.Rows, dataRow)
+	fmt.Println("sensorId: ", sensorId)
+	fmt.Println("value: ", value)
+	fmt.Println("timestamp: ", timestamp)
 
-			fmt.Println("SensorId:", finalData.ID)
-			// Imprimir os dados decodificados
-			for _, row := range finalData.Rows {
-				fmt.Println("Value:", row.Value)
-				fmt.Println("Timestamp:", row.Timestamp)
+	if validateDevice(deviceConfiguration, sensorIdParse, value) {
+		finalData.ID = int(math.Round(sensorIdParse))
+
+		var dataRow entities.Row
+		dataRow.Value = value
+		dataRow.Timestamp = timestampParse
+		finalData.Rows = append(finalData.Rows, dataRow)
+
+		fmt.Println("SensorId:", finalData.ID)
+		// Imprimir os dados decodificados
+		for _, row := range finalData.Rows {
+			fmt.Println("Value:", row.Value)
+			fmt.Println("Timestamp:", row.Timestamp)
+		}
+		transmissionChannel <- finalData
+	} else {
+		log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", sensorId)
+	}
+
+}
+
+func getField(campo string, data map[string]interface{}) interface{} {
+	parts := strings.Split(campo, ".")
+	field := data[parts[0]]
+
+	for _, part := range parts[1:] {
+		switch value := field.(type) {
+		case map[string]interface{}:
+			field = value[part]
+		case []interface{}:
+			index, err := strconv.Atoi(part)
+			if err != nil {
+				fmt.Println("Erro:", err)
+				return nil
 			}
-			transmissionChannel <- finalData
-		} else {
-			log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", sensorId)
+			if index < 0 || index >= len(value) {
+				log.Printf("Erro: Índice %v incompativel com a configuração no mqtt_device_config", index)
+				return nil
+			}
+			field = value[index]
+		default:
+			log.Println("Erro: Tipo desconhecido ", reflect.TypeOf(field))
+			return nil
 		}
 	}
+
+	return field
 }
 
 func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) bool {
