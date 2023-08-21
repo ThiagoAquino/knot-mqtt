@@ -3,8 +3,6 @@ package application
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/CESARBR/knot-mqtt/internal/entities"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"math"
 	"os"
@@ -12,6 +10,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/CESARBR/knot-mqtt/internal/entities"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
@@ -28,14 +29,23 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	return client
 }
 
-func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
+func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail, transmissionChannelTopic chan mqtt.Message) {
 	if token := client.Subscribe(mqttConfiguration.Topic, qos, func(client mqtt.Client, msg mqtt.Message) {
-		onMessageReceived(msg, transmissionChannel, deviceConfiguration, mqttConfigSensor)
+		transmissionChannelTopic <- msg
 	}); token.Wait() && token.Error() != nil {
 		log.Println(token.Error())
 		os.Exit(1)
 	}
+
 	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)
+
+	go processMessages(transmissionChannelTopic, transmissionChannel, deviceConfiguration, mqttConfigSensor)
+}
+
+func processMessages(transmissionChannelTopic chan mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
+	for msg := range transmissionChannelTopic {
+		onMessageReceived(msg, transmissionChannel, deviceConfiguration, mqttConfigSensor)
+	}
 }
 
 func WaitUntilShutdown() {

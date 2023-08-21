@@ -6,6 +6,7 @@ import (
 	"github.com/CESARBR/knot-mqtt/internal/utils"
 	"github.com/CESARBR/knot-mqtt/pkg/application"
 	"github.com/CESARBR/knot-mqtt/pkg/logging"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,9 +22,10 @@ func main() {
 	client := application.ConfigureClient(mqttConfiguration)
 	defer client.Disconnect(250)
 
+	transmissionChannelTopic := make(chan mqtt.Message)
 	for _, config := range mqttDeviceConfiguration.SensorDetails {
 		mqttConfiguration.Topic = config.Topic
-		go application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config)
+		application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config, transmissionChannelTopic)
 	}
 
 	pipeDevices := make(chan map[string]entities.Device)
