@@ -61,7 +61,6 @@ type DeviceConfig struct {
 	SensorDetails []SensorDetail `yaml:"config"`
 }
 type SensorDetail struct {
-	ID        string `yaml:"ID"`
 	Topic     string `yaml:"Topic"`
 	Value     string `yaml:"Value"`
 	Name      string `yaml:"Name"`

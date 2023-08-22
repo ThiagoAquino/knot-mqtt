@@ -5,7 +5,7 @@
   config:
   - sensorId: 1
     schema:
-      valueType: 2
+      valueType: 4
       unit: 1
       typeId: 65296
       name: dcsn_cntry

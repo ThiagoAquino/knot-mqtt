@@ -1,15 +1,16 @@
 package main
 
 import (
+	"net/http"
+	"os"
+	"path/filepath"
+
 	"github.com/CESARBR/knot-mqtt/internal/entities"
 	"github.com/CESARBR/knot-mqtt/internal/gateways/knot"
 	"github.com/CESARBR/knot-mqtt/internal/utils"
 	"github.com/CESARBR/knot-mqtt/pkg/application"
 	"github.com/CESARBR/knot-mqtt/pkg/logging"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"net/http"
-	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -22,17 +23,21 @@ func main() {
 	client := application.ConfigureClient(mqttConfiguration)
 	defer client.Disconnect(250)
 
-	transmissionChannelTopic := make(chan mqtt.Message)
-	for _, config := range mqttDeviceConfiguration.SensorDetails {
-		mqttConfiguration.Topic = config.Topic
-		application.SubscribeTopic(client, mqttConfiguration.MqttQoS, transmissionChannel, mqttConfiguration, deviceConfiguration, config, transmissionChannelTopic)
-	}
+	subscribeTopicBySensorDetails(mqttDeviceConfiguration.SensorDetails, mqttConfiguration, client, transmissionChannel, deviceConfiguration)
 
 	pipeDevices := make(chan map[string]entities.Device)
 	knotIntegration, err := knot.NewKNoTIntegration(pipeDevices, knotConfiguration, logger, deviceConfiguration)
 	application.VerifyError(err)
 	go application.DataConsumer(transmissionChannel, log.Get("Data consumer"), knotIntegration, pipeDevices)
 	application.WaitUntilShutdown()
+}
+
+func subscribeTopicBySensorDetails(mqttDeviceConfigSensorDetails []entities.SensorDetail, mqttConfiguration entities.MqttConfig, client mqtt.Client, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device) {
+	for i := 0; i < len(mqttDeviceConfigSensorDetails); i++ {
+		transmissionChannelTopic := make(chan mqtt.Message)
+		mqttConfiguration.Topic = mqttDeviceConfigSensorDetails[i].Topic
+		application.SubscribeTopic(client, transmissionChannel, transmissionChannelTopic, mqttConfiguration, deviceConfiguration, mqttDeviceConfigSensorDetails)
+	}
 }
 
 func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig, entities.DeviceConfig) {

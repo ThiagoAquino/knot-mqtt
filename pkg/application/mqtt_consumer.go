@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"os/signal"
 	"reflect"
@@ -29,8 +28,8 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	return client
 }
 
-func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entities.CapturedData, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail, transmissionChannelTopic chan mqtt.Message) {
-	if token := client.Subscribe(mqttConfiguration.Topic, qos, func(client mqtt.Client, msg mqtt.Message) {
+func SubscribeTopic(client mqtt.Client, transmissionChannel chan entities.CapturedData, transmissionChannelTopic chan mqtt.Message, mqttConfiguration entities.MqttConfig, deviceConfiguration map[string]entities.Device, mqttConfigSensor []entities.SensorDetail) {
+	if token := client.Subscribe(mqttConfiguration.Topic, mqttConfiguration.MqttQoS, func(client mqtt.Client, msg mqtt.Message) {
 		transmissionChannelTopic <- msg
 	}); token.Wait() && token.Error() != nil {
 		log.Println(token.Error())
@@ -38,13 +37,17 @@ func SubscribeTopic(client mqtt.Client, qos byte, transmissionChannel chan entit
 	}
 
 	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)
-
 	go processMessages(transmissionChannelTopic, transmissionChannel, deviceConfiguration, mqttConfigSensor)
 }
 
-func processMessages(transmissionChannelTopic chan mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
+func processMessages(transmissionChannelTopic chan mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor []entities.SensorDetail) {
 	for msg := range transmissionChannelTopic {
-		onMessageReceived(msg, transmissionChannel, deviceConfiguration, mqttConfigSensor)
+		for i, config := range mqttConfigSensor {
+			if msg.Topic() == config.Topic {
+				onMessageReceived(msg, transmissionChannel, deviceConfiguration, config, i+1)
+
+			}
+		}
 	}
 }
 
@@ -62,7 +65,7 @@ func VerifyError(err error) {
 	}
 }
 
-func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail) {
+func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor entities.SensorDetail, idSensor int) {
 	var data map[string]interface{}
 
 	err := json.Unmarshal([]byte(msg.Payload()), &data)
@@ -74,23 +77,21 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 
 	var finalData entities.CapturedData
 
-	sensorId := getField(mqttConfigSensor.ID, data)
 	value := getField(mqttConfigSensor.Value, data)
 	timestamp := getField(mqttConfigSensor.Timestamp, data)
 
-	if sensorId == nil || value == nil || timestamp == nil {
+	if value == nil || timestamp == nil {
 		return
 	}
 
-	sensorIdParse := sensorId.(float64)
 	timestampParse := timestamp.(string)
 
-	fmt.Println("sensorId: ", sensorId)
+	fmt.Println("sensorId: ", idSensor)
 	fmt.Println("value: ", value)
 	fmt.Println("timestamp: ", timestamp)
 
-	if validateDevice(deviceConfiguration, sensorIdParse, value) {
-		finalData.ID = int(math.Round(sensorIdParse))
+	if validateDevice(deviceConfiguration, idSensor, value) {
+		finalData.ID = idSensor
 
 		var dataRow entities.Row
 		dataRow.Value = value
@@ -105,7 +106,7 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		}
 		transmissionChannel <- finalData
 	} else {
-		log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", sensorId)
+		log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", idSensor)
 	}
 
 }
@@ -138,7 +139,7 @@ func getField(campo string, data map[string]interface{}) interface{} {
 	return field
 }
 
-func validateDevice(deviceConfiguration map[string]entities.Device, sensorId float64, value interface{}) bool {
+func validateDevice(deviceConfiguration map[string]entities.Device, sensorId int, value interface{}) bool {
 	hexMap := map[int]string{
 		1: "int",
 		2: "float64",
@@ -153,7 +154,7 @@ func validateDevice(deviceConfiguration map[string]entities.Device, sensorId flo
 	for _, device := range deviceConfiguration {
 		for _, config := range device.Config {
 			typeOf := reflect.TypeOf(value).Name()
-			if config.SensorID == int(sensorId) && hexMap[config.Schema.ValueType] == typeOf {
+			if config.SensorID == sensorId && hexMap[config.Schema.ValueType] == typeOf {
 				isValid = true
 			}
 		}
