@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/CESARBR/knot-mqtt/internal/entities"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -128,6 +129,8 @@ func getField(campo string, data map[string]interface{}) interface{} {
 	return field
 }
 
+var deviceConfigLock sync.RWMutex
+
 func validateDevice(deviceConfiguration map[string]entities.Device, sensorId int, value interface{}) bool {
 	hexMap := map[int]string{
 		1: "int",
@@ -139,14 +142,17 @@ func validateDevice(deviceConfiguration map[string]entities.Device, sensorId int
 		7: "double",
 	}
 
-	isValid := false
+	deviceConfigLock.RLock()
+	defer deviceConfigLock.RUnlock()
+
+	typeOf := reflect.TypeOf(value).Name()
+
 	for _, device := range deviceConfiguration {
 		for _, config := range device.Config {
-			typeOf := reflect.TypeOf(value).Name()
 			if config.SensorID == sensorId && hexMap[config.Schema.ValueType] == typeOf {
-				isValid = true
+				return true
 			}
 		}
 	}
-	return isValid
+	return false
 }

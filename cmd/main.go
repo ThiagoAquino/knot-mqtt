@@ -1,22 +1,20 @@
 package main
 
 import (
-	"net/http"
-	"os"
-	"path/filepath"
-
 	"github.com/CESARBR/knot-mqtt/internal/entities"
 	"github.com/CESARBR/knot-mqtt/internal/gateways/knot"
 	"github.com/CESARBR/knot-mqtt/internal/utils"
 	"github.com/CESARBR/knot-mqtt/pkg/application"
 	"github.com/CESARBR/knot-mqtt/pkg/logging"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"net/http"
+	"os"
 )
 
 func main() {
 	startPprof()
 	deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration := loadConfiguration()
-	log := setupLogger(mqttConfiguration.LogFilepath)
+	log := logging.NewLogrus("info", os.Stdout)
 	logger := log.Get("Main")
 	transmissionChannel := make(chan entities.CapturedData, mqttConfiguration.AmountTags)
 
@@ -56,15 +54,4 @@ func startPprof() {
 	go func() {
 		http.ListenAndServe("0.0.0.0:6060", nil)
 	}()
-}
-
-func setupLogger(logFilepath string) *logging.Logrus {
-	var log *logging.Logrus
-	file, err := os.OpenFile(filepath.Clean(logFilepath), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-	if err == nil {
-		log = logging.NewLogrus("info", file)
-	} else {
-		log = logging.NewLogrus("info", os.Stdout)
-	}
-	return log
 }
