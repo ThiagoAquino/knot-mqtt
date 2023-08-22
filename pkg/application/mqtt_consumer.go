@@ -2,7 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -56,7 +55,7 @@ func WaitUntilShutdown() {
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
 	log.Println("Sinal de interrupção recebido. Desconectando...")
-	fmt.Println("Desconectando...")
+	log.Println("Desconectando...")
 }
 
 func VerifyError(err error) {
@@ -86,10 +85,6 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 
 	timestampParse := timestamp.(string)
 
-	fmt.Println("sensorId: ", idSensor)
-	fmt.Println("value: ", value)
-	fmt.Println("timestamp: ", timestamp)
-
 	if validateDevice(deviceConfiguration, idSensor, value) {
 		finalData.ID = idSensor
 
@@ -98,12 +93,6 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		dataRow.Timestamp = timestampParse
 		finalData.Rows = append(finalData.Rows, dataRow)
 
-		fmt.Println("SensorId:", finalData.ID)
-		// Imprimir os dados decodificados
-		for _, row := range finalData.Rows {
-			fmt.Println("Value:", row.Value)
-			fmt.Println("Timestamp:", row.Timestamp)
-		}
 		transmissionChannel <- finalData
 	} else {
 		log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", idSensor)
@@ -122,7 +111,7 @@ func getField(campo string, data map[string]interface{}) interface{} {
 		case []interface{}:
 			index, err := strconv.Atoi(part)
 			if err != nil {
-				fmt.Println("Erro:", err)
+				log.Println("Erro:", err)
 				return nil
 			}
 			if index < 0 || index >= len(value) {
