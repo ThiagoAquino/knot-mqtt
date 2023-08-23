@@ -31,23 +31,31 @@ func main() {
 }
 
 func subscribeTopicBySensorDetails(mqttDeviceConfigSensorDetails []entities.SensorDetail, mqttConfiguration entities.MqttConfig, client mqtt.Client, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device) {
-	for i := 0; i < len(mqttDeviceConfigSensorDetails); i++ {
+	for idSensor := 0; idSensor < len(mqttDeviceConfigSensorDetails); idSensor++ {
 		transmissionChannelTopic := make(chan mqtt.Message)
-		mqttConfiguration.Topic = mqttDeviceConfigSensorDetails[i].Topic
+		mqttConfiguration.Topic = mqttDeviceConfigSensorDetails[idSensor].Topic
 		application.SubscribeTopic(client, transmissionChannel, transmissionChannelTopic, mqttConfiguration, deviceConfiguration, mqttDeviceConfigSensorDetails)
 	}
 }
 
 func loadConfiguration() (map[string]entities.Device, entities.IntegrationKNoTConfig, entities.MqttConfig, entities.DeviceConfig) {
-	deviceConfiguration, err := utils.ConfigurationParser("internal/configuration/device_config.yaml", make(map[string]entities.Device))
+	deviceConfiguration, err := utils.ConfigurationParser(getEnvironment("DEVICE_CONFIG", "internal/configuration/device_config.yaml"), make(map[string]entities.Device))
 	application.VerifyError(err)
-	knotConfiguration, err := utils.ConfigurationParser("internal/configuration/knot_setup.yaml", entities.IntegrationKNoTConfig{})
+	knotConfiguration, err := utils.ConfigurationParser(getEnvironment("KNOT_CONFIG", "internal/configuration/knot_setup.yaml"), entities.IntegrationKNoTConfig{})
 	application.VerifyError(err)
-	mqttConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_setup.yaml", entities.MqttConfig{})
+	mqttConfiguration, err := utils.ConfigurationParser(getEnvironment("MQTT_SETUP", "internal/configuration/mqtt_setup.yaml"), entities.MqttConfig{})
 	application.VerifyError(err)
-	mqttDeviceConfiguration, err := utils.ConfigurationParser("internal/configuration/mqtt_device_config.yaml", entities.DeviceConfig{})
+	mqttDeviceConfiguration, err := utils.ConfigurationParser(getEnvironment("MQTT_DEVICE_CONFIG", "internal/configuration/mqtt_device_config.yaml"), entities.DeviceConfig{})
 	application.VerifyError(err)
 	return deviceConfiguration, knotConfiguration, mqttConfiguration, mqttDeviceConfiguration
+}
+
+func getEnvironment(envVariable string, defaultValue string) string {
+	variableValue := os.Getenv(envVariable)
+	if variableValue == "" {
+		return defaultValue
+	}
+	return variableValue
 }
 
 func startPprof() {

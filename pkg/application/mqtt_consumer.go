@@ -24,7 +24,7 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-	log.Println("Conexão MQTT estabelecida")
+	log.Println("Established MQTT connection")
 	return client
 }
 
@@ -36,16 +36,15 @@ func SubscribeTopic(client mqtt.Client, transmissionChannel chan entities.Captur
 		os.Exit(1)
 	}
 
-	log.Printf("Subscrição realizada no tópico: %s", mqttConfiguration.Topic)
+	log.Printf("Subscription made to the topic: %s", mqttConfiguration.Topic)
 	go processMessages(transmissionChannelTopic, transmissionChannel, deviceConfiguration, mqttConfigSensor)
 }
 
 func processMessages(transmissionChannelTopic chan mqtt.Message, transmissionChannel chan entities.CapturedData, deviceConfiguration map[string]entities.Device, mqttConfigSensor []entities.SensorDetail) {
 	for msg := range transmissionChannelTopic {
-		for i, config := range mqttConfigSensor {
+		for idSensor, config := range mqttConfigSensor {
 			if msg.Topic() == config.Topic {
-				onMessageReceived(msg, transmissionChannel, deviceConfiguration, config, i+1)
-
+				onMessageReceived(msg, transmissionChannel, deviceConfiguration, config, idSensor+1)
 			}
 		}
 	}
@@ -55,8 +54,7 @@ func WaitUntilShutdown() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
-	log.Println("Sinal de interrupção recebido. Desconectando...")
-	log.Println("Desconectando...")
+	log.Println("Interrupt signal received. Disconnecting...")
 }
 
 func VerifyError(err error) {
@@ -71,7 +69,7 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 	err := json.Unmarshal([]byte(msg.Payload()), &data)
 
 	if err != nil {
-		log.Println("Erro ao converter JSON:", err)
+		log.Println("Error to parse JSON:", err)
 		return
 	}
 
@@ -96,7 +94,7 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 
 		transmissionChannel <- finalData
 	} else {
-		log.Printf("Erro: O dado do sensor %v está diferente do configurado no device_config", idSensor)
+		log.Printf("Error: Sensor data %v  is different from that configured in device_config", idSensor)
 	}
 
 }
@@ -112,16 +110,16 @@ func getField(campo string, data map[string]interface{}) interface{} {
 		case []interface{}:
 			index, err := strconv.Atoi(part)
 			if err != nil {
-				log.Println("Erro:", err)
+				log.Println("Error:", err)
 				return nil
 			}
 			if index < 0 || index >= len(value) {
-				log.Printf("Erro: Índice %v incompativel com a configuração no mqtt_device_config", index)
+				log.Printf("Error: Index %v  not compatible with configuration in mqtt_device_config", index)
 				return nil
 			}
 			field = value[index]
 		default:
-			log.Println("Erro: Tipo desconhecido ", reflect.TypeOf(field))
+			log.Println("Error: unknown type ", reflect.TypeOf(field))
 			return nil
 		}
 	}

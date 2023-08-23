@@ -74,4 +74,9 @@ ENV TZ=America/Recife
 ENV MQTTIP=localhost
 ENV MQTTPORT=1883
 
+ENV DEVICE_CONFIG=internal/configuration/device_config.yaml
+ENV KNOT_CONFIG=internal/configuration/knot_setup.yaml
+ENV MQTT_SETUP=internal/configuration/mqtt_setup.yaml
+ENV MQTT_DEVICE_CONFIG=internal/configuration/mqtt_device_config.yaml
+
 ENTRYPOINT ["./knot_mqtt"]
