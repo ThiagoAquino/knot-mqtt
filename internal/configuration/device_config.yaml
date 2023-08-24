@@ -5,7 +5,7 @@
   config:
   - sensorId: 1
     schema:
-      valueType: 2
+      valueType: 4
       unit: 1
       typeId: 65296
       name: dcsn_cntry
@@ -16,7 +16,7 @@
       upperThreshold: null
   - sensorId: 2
     schema:
-      valueType: 2
+      valueType: 4
       unit: 1
       typeId: 65296
       name: thy_cmpr
@@ -27,7 +27,7 @@
       upperThreshold: null
   - sensorId: 3
     schema:
-      valueType: 2
+      valueType: 4
       unit: 1
       typeId: 65296
       name: rcv
@@ -38,7 +38,7 @@
       upperThreshold: null
   - sensorId: 4
     schema:
-      valueType: 2
+      valueType: 4
       unit: 1
       typeId: 65296
       name: nc_sf
@@ -48,6 +48,28 @@
       lowerThreshold: null
       upperThreshold: null
   - sensorId: 5
+    schema:
+      valueType: 4
+      unit: 1
+      typeId: 65296
+      name: ndstry_scnd
+    event:
+      change: true
+      timeSec: 30
+      lowerThreshold: null
+      upperThreshold: null
+  - sensorId: 6
+    schema:
+      valueType: 1
+      unit: 1
+      typeId: 65296
+      name: ndstry_scnd
+    event:
+      change: true
+      timeSec: 30
+      lowerThreshold: null
+      upperThreshold: null
+  - sensorId: 7
     schema:
       valueType: 2
       unit: 1

@@ -1,9 +1,8 @@
 package entities
 
 type Row struct {
-	ID        int     `json:"sensorId"`
-	Value     float64 `json:"value"`
-	Timestamp string  `json:"timestamp"`
+	Value     interface{} `json:"value"`
+	Timestamp string      `json:"timestamp"`
 }
 
 type Statement struct {
@@ -12,6 +11,6 @@ type Statement struct {
 }
 
 type CapturedData struct {
-	ID   int   `json:"id"`
+	ID   int   `json:"sensorId"`
 	Rows []Row `json:"data"`
 }

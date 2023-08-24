@@ -1,0 +1,41 @@
+config:
+  - 1:
+    Topic: topic
+    Value: data.0.valor
+    Timestamp: data.0.timestamp
+  - 2:
+    Topic: topic2
+    Value: data.0.valor
+    Timestamp: data.0.timestamp
+  - 3:
+    Topic: topic3
+    Value: data.1.valor
+    Timestamp: data.1.timestamp
+  - 4:
+    Topic: topic4
+    Value: data.1.valor
+    Timestamp: data.1.timestamp
+  - 5:
+    Topic: topic5
+    Value: data.1.valor
+    Timestamp: data.1.timestamp
+
+
+#Exemple Topic Field:
+#  any string
+
+#Exemple Value and Timestamp Field:
+#  object_value
+#  object_timestamp
+
+#  data.object_value
+#  data.object_timestamp
+
+#  data.1.object_value
+#  data.1.object_timestamp
+
+#  data.1.object_value.object
+#  data.1.object_timestamp.object
+
+#  data.1.object_value.1.object
+#  data.1.object_timestamp.1.object

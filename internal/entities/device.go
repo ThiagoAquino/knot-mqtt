@@ -56,3 +56,13 @@ type Data struct {
 	Value     interface{} `json:"value"`
 	TimeStamp interface{} `json:"timestamp"`
 }
+
+type DeviceConfig struct {
+	SensorDetails []SensorDetail `yaml:"config"`
+}
+type SensorDetail struct {
+	Topic     string `yaml:"Topic"`
+	Value     string `yaml:"Value"`
+	Name      string `yaml:"Name"`
+	Timestamp string `yaml:"Timestamp"`
+}
