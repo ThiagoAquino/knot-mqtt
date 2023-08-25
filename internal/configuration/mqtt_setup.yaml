@@ -1,6 +1,6 @@
-mqttBroker: "tcp://10.0.0.172:1883"
+mqttBroker: "tcp://localhost:1883"
 mqttClientID: "mqtt-subscriber"
 topic: "knot"
 mqttQoS: 2
-mqttUser: "seu_usuario"
-mqttPass: "sua_senha"
+mqttUser: "tas3"
+mqttPass: "tas3"
