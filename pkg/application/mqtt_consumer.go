@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -18,6 +19,8 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	//Configure client
 	opts := mqtt.NewClientOptions().AddBroker(mqttConfiguration.MqttBroker)
 	opts.SetClientID(mqttConfiguration.MqttClientID)
+	opts.SetUsername(mqttConfiguration.MqttUser)
+	opts.SetPassword(mqttConfiguration.MqttPass)
 
 	// Create MQTT client
 	client := mqtt.NewClient(opts)
@@ -91,6 +94,13 @@ func onMessageReceived(msg mqtt.Message, transmissionChannel chan entities.Captu
 		dataRow.Value = value
 		dataRow.Timestamp = timestampParse
 		finalData.Rows = append(finalData.Rows, dataRow)
+
+		fmt.Println("SensorId:", finalData.ID)
+		// Imprimir os dados decodificados
+		for _, row := range finalData.Rows {
+			fmt.Println("Value:", row.Value)
+			fmt.Println("Timestamp:", row.Timestamp)
+		}
 
 		transmissionChannel <- finalData
 	} else {
