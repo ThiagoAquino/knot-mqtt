@@ -27,6 +27,9 @@
   - `mqttClientID`: Client data responsible for the connection.
   - `topic`: Generic topic (will be subscribed when starting to read sensor data).
   - `mqttQoS`: Quality of Service.
+  - `mqttUser`: User of the MQTT service.
+  - `mqttPass`: Password of the MQTT service.
+    - **Note: If the MQTT service does not require a connection user, we can remove the `mqttUser` and `mqttPass` fields.**
 
 - The `internal/configuration/mqtt_device_config.yaml` file contains JSON structure. This structure provides the capability to customize sensor configuration, allowing for the definition of specific operational and behavioral parameters. Additionally, it enables the assignment of a unique topic to the sensor, indicating the sensor's location or purpose within the network or system at hand. This results in greater flexibility in organizing and managing sensors, ensuring that each sensor can be appropriately configured and identified through its associated topic.
 

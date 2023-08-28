@@ -1,4 +1,6 @@
-mqttBroker: "tcp://localhost:1883"
+mqttBroker: "tcp://127.0.0.1:1883"
 mqttClientID: "mqtt-subscriber"
 topic: "knot"
 mqttQoS: 2
+mqttUser: "your-user"
+mqttPass: "your-password"

@@ -11,7 +11,7 @@ RUN apk --no-cache add --virtual .build-deps \
     git \
     curl
 
-# Instale o OpenSSL para gerar o certificado
+# Install OpenSSL for certificate generation
 RUN apk add --no-cache openssl
 
 # Set the Current Working Directory inside the container
@@ -20,12 +20,11 @@ WORKDIR /go/src/github.com/CESARBR/knot-mqtt
 # Copy the source code from the current directory to $WORKDIR (inside the container)
 COPY . .
 
-#Install package required by golang "time" on scratch-based images
+# Install package required by golang "time" on scratch-based images
 RUN apk --no-cache add tzdata
 
 # Install dependencies
 RUN apk --no-cache add curl gnupg
-
 
 # Don't use ca-certificates as .build-deps so that we use import certificates
 # from builder, in the final image
@@ -42,6 +41,7 @@ COPY . .
 # Port that must be opened
 EXPOSE 1883
 EXPOSE 6060
+EXPOSE 5672
 
 # Install project development tools and dependencies
 RUN go install github.com/ahmetb/govvv@latest
@@ -54,7 +54,7 @@ RUN make bin
 RUN apk del .build-deps
 
 # Second stage: create the entrypoint to the application binary generated in the previous stage
-FROM scratch
+FROM alpine:latest
 
 WORKDIR /app
 
@@ -71,8 +71,6 @@ COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 VOLUME /app/internal/configuration/
 
 ENV TZ=America/Recife
-ENV MQTTIP=localhost
-ENV MQTTPORT=1883
 
 ENV DEVICE_CONFIG=internal/configuration/device_config.yaml
 ENV KNOT_CONFIG=internal/configuration/knot_setup.yaml

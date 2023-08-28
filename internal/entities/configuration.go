@@ -27,4 +27,6 @@ type MqttConfig struct {
 	LogFilepath  string `yaml:"logFilepath"`
 	AmountTags   int    `yaml:"amountTags"`
 	MqttQoS      byte   `yaml:"mqttQoS"`
+	MqttUser     string `yaml:"mqttUser"`
+	MqttPass     string `yaml:"mqttPass"`
 }

@@ -18,6 +18,10 @@ func ConfigureClient(mqttConfiguration entities.MqttConfig) mqtt.Client {
 	//Configure client
 	opts := mqtt.NewClientOptions().AddBroker(mqttConfiguration.MqttBroker)
 	opts.SetClientID(mqttConfiguration.MqttClientID)
+	if mqttConfiguration.MqttUser != "" && mqttConfiguration.MqttPass != "" {
+		opts.SetUsername(mqttConfiguration.MqttUser)
+		opts.SetPassword(mqttConfiguration.MqttPass)
+	}
 
 	// Create MQTT client
 	client := mqtt.NewClient(opts)
